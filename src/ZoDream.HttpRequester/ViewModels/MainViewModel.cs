@@ -17,12 +17,14 @@ using ZoDream.Shared.ViewModels;
 
 namespace ZoDream.HttpRequester.ViewModels
 {
-    public class MainViewModel: BindableBase
+    public class MainViewModel: BindableBase, IDisposable
     {
 
         public MainViewModel()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            RawBodyType = RawTypeItems[1];
+            Method = MethodItems[0];
         }
 
         private string[] methodItems = new[] { "Get", "Post", "Put", "Delete", "Head", "Options", "Patch", "Trace" };
@@ -49,7 +51,7 @@ namespace ZoDream.HttpRequester.ViewModels
             set => Set(ref rawTypeItems, value);
         }
 
-        private string method = "Get";
+        private string method = string.Empty;
 
         public string Method
         {
@@ -66,7 +68,6 @@ namespace ZoDream.HttpRequester.ViewModels
         }
 
         private ObservableCollection<DataItem> queries = new();
-
         public ObservableCollection<DataItem> Queries
         {
             get => queries;
@@ -192,6 +193,9 @@ namespace ZoDream.HttpRequester.ViewModels
             using var client = new HttpClient();
             using var req = new HttpRequestMessage();
             req.RequestUri = GetUri();
+            var url = req.RequestUri.ToString();
+            ResponseInfo.Add(new DataItem("URL", url));
+            ContentInfo.Add("URL", url);
             foreach (var item in HeaderItems)
             {
                 req.Headers.TryAddWithoutValidation(item.Name, item.Value);
@@ -268,9 +272,10 @@ namespace ZoDream.HttpRequester.ViewModels
                 IsLoading = false;
                 return;
             }
+            var length = res.Content.Headers.ContentLength;
             ResponseInfo.Add(new DataItem("Status Code", $"{res.StatusCode}"));
             ResponseInfo.Add(new DataItem("Version", $"{res.Version}"));
-            ResponseInfo.Add(new DataItem("Length", Disk.FormatSize(res.Content.Headers.ContentLength)));
+            ResponseInfo.Add(new DataItem("Length", Disk.FormatSize(length)));
             var items = res.Content.Headers.GetValues("Content-Type");
             foreach (var item in items)
             {
@@ -290,6 +295,11 @@ namespace ZoDream.HttpRequester.ViewModels
             {
                 responseHeaders.Add(new DataItem(item.Key, string.Join(';', item.Value)));
             }
+            if (length != null &&  length.ToString()!.Length > 10)
+            {
+                IsLoading = false;
+                return;
+            }
             Stream input;
             if (res.Content.Headers.ContentEncoding.Contains("gzip"))
             {
@@ -298,8 +308,10 @@ namespace ZoDream.HttpRequester.ViewModels
             {
                 input = await res.Content.ReadAsStreamAsync();
             }
+            ClearResponseStream();
             using var output = new FileStream(HttpTempFileName, FileMode.Create);
-            var bArr = new byte[2048];
+            var preBuffer = 2048;
+            var bArr = new byte[preBuffer];
             while (true)
             {
                 var size = input.Read(bArr, 0, bArr.Length);
@@ -307,6 +319,13 @@ namespace ZoDream.HttpRequester.ViewModels
                 if (token.IsCancellationRequested)
                 {
                     input.Close();
+                    IsLoading = false;
+                    return;
+                }
+                if (output.Length.ToString().Length > 10)
+                {
+                    input.Close();
+                    IsLoading = false;
                     return;
                 }
                 if (size <= 0)
@@ -365,7 +384,14 @@ namespace ZoDream.HttpRequester.ViewModels
 
         private async Task<string> GetHtmlAsync()
         {
-            return await LocationStorage.ReadAsync(HttpTempFileName);
+            var page = await LocationStorage.ReadAsync(HttpTempFileName);
+            var url = ContentInfo["URL"];
+            var i = url.IndexOf('?');
+            if (i > 0)
+            {
+                url = url[..i];
+            }
+            return $"<base href=\"{url}\">{page}";
         }
 
         private async Task<string> GetJsonAsync()
@@ -417,6 +443,23 @@ namespace ZoDream.HttpRequester.ViewModels
             return new Uri(path + "?" + query);
         }
 
+        public FileStream? ResponseStream { get; private set; }
+        public void ClearResponseStream()
+        {
+            if (ResponseStream is null)
+            {
+                return;
+            }
+            ResponseStream?.Close();
+            ResponseStream = null;
+        }
+
+        public void CreateResponseStream()
+        {
+            ClearResponseStream();
+            ResponseStream = new FileStream(HttpTempFileName, FileMode.Open);
+        }
+
         public static bool IsNotBody(string method)
         {
             if (string.IsNullOrEmpty(method))
@@ -425,6 +468,13 @@ namespace ZoDream.HttpRequester.ViewModels
             }
             method = method.ToLower();
             return method == "get" || method == "head" || method == "delete";
+        }
+
+        public void Dispose()
+        {
+            Cancel();
+            ClearResponseStream();
+            File.Delete(HttpTempFileName);
         }
     }
 

@@ -49,7 +49,9 @@ namespace ZoDream.HttpRequester
         {
             await Browser.EnsureCoreWebView2Async();
             Browser.NavigateToString("");
+            HexTb.Length = 0;
             RawBodyTb.Text = "";
+            ViewModel.ClearResponseStream();
             try
             {
                 await ViewModel.ExecuteAsync();
@@ -64,6 +66,8 @@ namespace ZoDream.HttpRequester
             var raw = await ViewModel.GetRawAsync();
             App.Current.Dispatcher.Invoke(() =>
             {
+                ViewModel.CreateResponseStream();
+                HexTb.Length = ViewModel.ResponseStream!.Length;
                 RawBodyTb.Text = raw;
                 Browser.NavigateToString(page);
             });
@@ -78,7 +82,7 @@ namespace ZoDream.HttpRequester
 
         private void HeaderTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
         {
-            ViewModel.HeaderItems.Add(e.NewItem as Models.DataItem);
+            ViewModel.HeaderItems.Add(new Models.DataItem());
         }
 
         private void QueriesTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
@@ -94,6 +98,24 @@ namespace ZoDream.HttpRequester
         private void FormTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
         {
             ViewModel.FormItems.Add(new Models.DataItem());
+        }
+
+        private void HexView_ByteLoad(object sender, Shared.HexView.HexLoadEventArgs e)
+        {
+            var stream = ViewModel.ResponseStream;
+            if (stream is null)
+            {
+                return;
+            }
+            stream.Seek(e.Position, System.IO.SeekOrigin.Begin);
+            var buffer = new byte[e.Length];
+            stream.Read(buffer, 0, e.Length);
+            HexTb.Append(e, buffer);
+        }
+
+        private void Window_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Dispose();
         }
     }
 }

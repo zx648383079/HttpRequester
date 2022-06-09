@@ -6,9 +6,11 @@
         xmlns:cvt="clr-namespace:ZoDream.HttpRequester.Converters"
         xmlns:ctl="clr-namespace:ZoDream.Shared.Controls;assembly=ZoDream.Shared.Controls"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:hex="clr-namespace:ZoDream.Shared.HexView;assembly=ZoDream.Shared.HexView"
         xmlns:local="clr-namespace:ZoDream.HttpRequester"
+        Unloaded="Window_Unloaded"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Http Requester" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <FontFamily x:Key="IconFontFamily">Segoe MDL2 Assets</FontFamily>
         <cvt:MethodConverter x:Key="MethodCvt"/>
@@ -69,7 +71,7 @@
                                 <RowDefinition Height="30"/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <ComboBox Text="{Binding RawBodyText,Mode=TwoWay}" 
+                            <ComboBox Text="{Binding RawBodyType,Mode=TwoWay}" 
                                       ItemsSource="{Binding RawTypeItems}" 
                                       VerticalContentAlignment="Center"
                                       IsEditable="True"
@@ -137,7 +139,7 @@
                                       CoreWebView2InitializationCompleted="Browser_CoreWebView2InitializationCompleted"/>
                     </TabItem>
                     <TabItem Header="Raw">
-                        
+                        <hex:HexView x:Name="HexTb" ByteLoad="HexView_ByteLoad"/>
                     </TabItem>
                     <TabItem Header="Body">
                         <TextBox x:Name="RawBodyTb" IsReadOnly="True"/>

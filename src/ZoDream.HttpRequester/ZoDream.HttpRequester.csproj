@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\shared\ZoDream.Shared.Controls\ZoDream.Shared.Controls.csproj" />
+    <ProjectReference Include="..\..\shared\ZoDream.Shared.HexView\ZoDream.Shared.HexView.csproj" />
     <ProjectReference Include="..\..\shared\ZoDream.Shared\ZoDream.Shared.csproj" />
   </ItemGroup>
 
