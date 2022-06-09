@@ -20,6 +20,10 @@
             <Setter Property="AcceptsReturn" Value="True"/>
             <Setter Property="AcceptsTab" Value="True"/>
         </Style>
+        <Style x:Key="HeaderTb" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -50,6 +54,26 @@
                         <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
                     </DataGrid.Columns>
                 </DataGrid>
+            </TabItem>
+            <TabItem Header="Proxy">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Address" Style="{StaticResource HeaderTb}"/>
+                    <TextBlock Text="UserName" Grid.Row="1" Style="{StaticResource HeaderTb}"/>
+                    <TextBlock Text="Password" Grid.Row="2" Style="{StaticResource HeaderTb}"/>
+                    <TextBox Text="{Binding ProxyAddress,Mode=TwoWay}" MaxLines="1" Grid.Column="1"/>
+                    <TextBox Text="{Binding ProxyUserName,Mode=TwoWay}" MaxLines="1" Grid.Column="1" Grid.Row="1"/>
+                    <TextBox Text="{Binding ProxyPassword,Mode=TwoWay}" MaxLines="1" Grid.Column="1" Grid.Row="2"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Headers">
                 <DataGrid x:Name="HeaderTb" ItemsSource="{Binding HeaderItems,Mode=TwoWay}" CanUserAddRows="True" 
@@ -153,9 +177,9 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
-                    <TabItem Header="Cookies">
+                    <!--<TabItem Header="Cookies">
                         <TextBox IsReadOnly="True"/>
-                    </TabItem>
+                    </TabItem>-->
                     <TabItem Header="Other">
                         <DataGrid ItemsSource="{Binding ResponseInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
                             <DataGrid.Columns >

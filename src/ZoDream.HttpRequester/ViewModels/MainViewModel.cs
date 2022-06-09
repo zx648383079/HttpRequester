@@ -35,6 +35,32 @@ namespace ZoDream.HttpRequester.ViewModels
             set => Set(ref methodItems, value);
         }
 
+        private string proxyAddress = string.Empty;
+
+        public string ProxyAddress
+        {
+            get => proxyAddress;
+            set => Set(ref proxyAddress, value);
+        }
+
+        private string proxyUserName = string.Empty;
+
+        public string ProxyUserName
+        {
+            get => proxyUserName;
+            set => Set(ref proxyUserName, value);
+        }
+
+        private string proxyPassword = string.Empty;
+
+        public string ProxyPassword
+        {
+            get => proxyPassword;
+            set => Set(ref proxyPassword, value);
+        }
+
+
+
         private string[] headerNameItems = Enum.GetNames(typeof(HttpRequestHeader));
 
         public string[] HeaderNameItems
@@ -190,14 +216,45 @@ namespace ZoDream.HttpRequester.ViewModels
             ContentInfo.Clear();
             TokenSource = new();
             var token = TokenSource.Token;
-            using var client = new HttpClient();
+            var requstUrl = GetUri();
+            var handler = new HttpClientHandler()
+            {
+                AllowAutoRedirect = false,
+                UseCookies = true,
+                CookieContainer = new CookieContainer(),
+                ServerCertificateCustomValidationCallback = (message, certificate2, arg3, arg4) => true
+            };
+            var cookie = HeaderItems.Where(i => i.Name.ToLower() == "cookie").FirstOrDefault();
+            if (cookie != null)
+            {
+                foreach (var item in cookie.Value.Split(';'))
+                {
+                    handler.CookieContainer.SetCookies(requstUrl, item);
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(ProxyAddress))
+            {
+                handler.Proxy = new WebProxy()
+                {
+                    Address = new Uri(ProxyAddress),
+                    UseDefaultCredentials = string.IsNullOrWhiteSpace(ProxyUserName),
+                    Credentials = string.IsNullOrWhiteSpace(ProxyUserName) ? null : new NetworkCredential(
+                   userName: ProxyUserName,
+                   password: ProxyPassword)
+                };
+            }
+            using var client = new HttpClient(handler);
             using var req = new HttpRequestMessage();
-            req.RequestUri = GetUri();
-            var url = req.RequestUri.ToString();
+            req.RequestUri = requstUrl;
+            var url = requstUrl.ToString();
             ResponseInfo.Add(new DataItem("URL", url));
             ContentInfo.Add("URL", url);
             foreach (var item in HeaderItems)
             {
+                if (item.Name.ToLower() == "cookie")
+                {
+                    continue;
+                }
                 req.Headers.TryAddWithoutValidation(item.Name, item.Value);
             }
             req.Method = Method.ToLower() switch
