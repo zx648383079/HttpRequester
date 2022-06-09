@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ZoDream.HttpRequester.ViewModels;
+using ZoDream.Shared.Controls;
 
 namespace ZoDream.HttpRequester
 {
@@ -115,7 +116,13 @@ namespace ZoDream.HttpRequester
 
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
+            _ =ViewModel.SaveOptionAsync();
             ViewModel.Dispose();
+        }
+
+        private void IconButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RemoveHistory((sender as Button).DataContext as string);
         }
     }
 }

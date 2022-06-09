@@ -10,6 +10,7 @@
         xmlns:local="clr-namespace:ZoDream.HttpRequester"
         Unloaded="Window_Unloaded"
         mc:Ignorable="d"
+        x:Name="root"
         Title="Http Requester" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <FontFamily x:Key="IconFontFamily">Segoe MDL2 Assets</FontFamily>
@@ -39,7 +40,25 @@
             </Grid.ColumnDefinitions>
             <ComboBox ItemsSource="{Binding MethodItems}" 
                       SelectedValue="{Binding Method,Mode=TwoWay}" VerticalContentAlignment="Center"/>
-            <TextBox Text="{Binding Url,Mode=TwoWay}" MaxLines="1" Grid.Column="1"/>
+            <ComboBox Text="{Binding Url,Mode=TwoWay}" 
+                      IsEditable="True"
+                      ItemsSource="{Binding UrlHistories,Mode=OneWay}"
+                      VerticalContentAlignment="Center" Grid.Column="1"
+                      HorizontalContentAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Width="20" Height="20"
+                                            Content="&#xE106;" FontFamily="{StaticResource IconFontFamily}" DataContext="{Binding}" Click="IconButton_Click"/>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
             <Button x:Name="ExecuteBtn" 
                     Content="{Binding IsLoading, Converter={StaticResource StatusCvt}}" 
                     Click="ExecuteBtn_Click" 
@@ -79,7 +98,16 @@
                 <DataGrid x:Name="HeaderTb" ItemsSource="{Binding HeaderItems,Mode=TwoWay}" CanUserAddRows="True" 
                           CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="HeaderTb_AddingNewItem">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
+                        <DataGridTemplateColumn Header="Key" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox Text="{Binding Name,Mode=TwoWay}"
+                                              IsEditable="True"
+                                                      VerticalContentAlignment="Center"
+                                                      ItemsSource="{Binding DataContext.HeaderNameItems,ElementName=root,Mode=OneWay}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
                     </DataGrid.Columns>
                 </DataGrid>
@@ -128,11 +156,9 @@
                                 <DataGridTemplateColumn Header="Type" Width="60">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ComboBox SelectedIndex="{Binding DataType,Mode=TwoWay}" 
-                                                      VerticalContentAlignment="Center">
-                                                <ComboBoxItem>Text</ComboBoxItem>
-                                                <ComboBoxItem>File</ComboBoxItem>
-                                            </ComboBox>
+                                            <ComboBox SelectedIndex="{Binding DataType,Mode=TwoWay}"
+                                                      VerticalContentAlignment="Center"
+                                                      ItemsSource="{Binding DataContext.FormTypeItems,ElementName=root,Mode=OneWay}"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -144,6 +170,7 @@
                                                          Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=0}"/>
                                                 <ctl:FileInput FileName="{Binding Value,Mode=TwoWay}" 
                                                                Height="30"
+                                                               FontSize="16"
                                                                Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=1}"/>
                                             </Grid>
                                         </DataTemplate>
@@ -173,7 +200,8 @@
                                   AutoGenerateColumns="False" CanUserAddRows="False">
                             <DataGrid.Columns >
                                 <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="Value" Width="200" Binding="{Binding Value}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Value" Width="200" 
+                                                    Binding="{Binding Value}" IsReadOnly="True"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>

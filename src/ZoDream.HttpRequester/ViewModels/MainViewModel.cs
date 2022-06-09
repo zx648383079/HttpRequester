@@ -25,6 +25,17 @@ namespace ZoDream.HttpRequester.ViewModels
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             RawBodyType = RawTypeItems[1];
             Method = MethodItems[0];
+            _ = LoadOptionAsync();
+        }
+
+        public AppOption Option = new();
+
+        private ObservableCollection<string> urlHistories = new();
+
+        public ObservableCollection<string> UrlHistories
+        {
+            get => urlHistories;
+            set => Set(ref urlHistories, value);
         }
 
         private string[] methodItems = new[] { "Get", "Post", "Put", "Delete", "Head", "Options", "Patch", "Trace" };
@@ -59,8 +70,6 @@ namespace ZoDream.HttpRequester.ViewModels
             set => Set(ref proxyPassword, value);
         }
 
-
-
         private string[] headerNameItems = Enum.GetNames(typeof(HttpRequestHeader));
 
         public string[] HeaderNameItems
@@ -75,6 +84,14 @@ namespace ZoDream.HttpRequester.ViewModels
         {
             get => rawTypeItems;
             set => Set(ref rawTypeItems, value);
+        }
+
+        private string[] formTypeItems = new[] {"Text", "File", "Json", "Xml"};
+
+        public string[] FormTypeItems
+        {
+            get => formTypeItems;
+            set => Set(ref formTypeItems, value);
         }
 
         private string method = string.Empty;
@@ -215,6 +232,7 @@ namespace ZoDream.HttpRequester.ViewModels
             responseHeaders.Clear();
             ContentInfo.Clear();
             TokenSource = new();
+            AddHistory(Url);
             var token = TokenSource.Token;
             var requstUrl = GetUri();
             var handler = new HttpClientHandler()
@@ -525,6 +543,52 @@ namespace ZoDream.HttpRequester.ViewModels
             }
             method = method.ToLower();
             return method == "get" || method == "head" || method == "delete";
+        }
+
+        public async Task<AppOption> LoadOptionAsync()
+        {
+            var option = await AppData.LoadAsync<AppOption>();
+            if (option != null)
+            {
+                Option = option;
+                Method = option.Method;
+                Url = option.Url;
+                foreach (var item in option.Histories)
+                {
+                    UrlHistories.Add(item);
+                }
+            }
+            return Option;
+        }
+
+        public async Task SaveOptionAsync()
+        {
+            Option.Url = Url;
+            Option.Method = Method;
+            Option.Histories = UrlHistories.ToList();
+            await AppData.SaveAsync(Option);
+        }
+
+        public void AddHistory(string url)
+        {
+            if (UrlHistories.Contains(url))
+            {
+                UrlHistories.Move(UrlHistories.IndexOf(url), 0);
+                _ = SaveOptionAsync();
+                return;
+            }
+            UrlHistories.Insert(0, url);
+            for (var i = UrlHistories.Count - 1; i > 10; i--)
+            {
+                UrlHistories.RemoveAt(i);
+            }
+            _ = SaveOptionAsync();
+        }
+
+        public void RemoveHistory(string url)
+        {
+            UrlHistories.Remove(url);
+            _ = SaveOptionAsync();
         }
 
         public void Dispose()

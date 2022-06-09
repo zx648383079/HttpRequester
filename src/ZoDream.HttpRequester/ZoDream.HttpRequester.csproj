@@ -10,7 +10,16 @@
 	  <Authors>zodream</Authors>
 	  <Company>zodream.cn</Company>
 	  <Copyright>Copyright © 2022 zodream.cn</Copyright>
+	  <ApplicationIcon>requester.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="requester.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="requester.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1210.39" />
