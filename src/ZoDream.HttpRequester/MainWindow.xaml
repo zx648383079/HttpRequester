@@ -1,0 +1,170 @@
+﻿<Window x:Class="ZoDream.HttpRequester.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cvt="clr-namespace:ZoDream.HttpRequester.Converters"
+        xmlns:ctl="clr-namespace:ZoDream.Shared.Controls;assembly=ZoDream.Shared.Controls"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:local="clr-namespace:ZoDream.HttpRequester"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <FontFamily x:Key="IconFontFamily">Segoe MDL2 Assets</FontFamily>
+        <cvt:MethodConverter x:Key="MethodCvt"/>
+        <cvt:StatusConverter x:Key="StatusCvt"/>
+        <cvt:TypeConverter x:Key="TypeCvt"/>
+        <Style x:Key="RawTb" TargetType="TextBox">
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="AcceptsTab" Value="True"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox ItemsSource="{Binding MethodItems}" 
+                      SelectedValue="{Binding Method,Mode=TwoWay}" VerticalContentAlignment="Center"/>
+            <TextBox Text="{Binding Url,Mode=TwoWay}" MaxLines="1" Grid.Column="1"/>
+            <Button x:Name="ExecuteBtn" 
+                    Content="{Binding IsLoading, Converter={StaticResource StatusCvt}}" 
+                    Click="ExecuteBtn_Click" 
+                    Grid.Column="2"/>
+        </Grid>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Queries">
+                <DataGrid x:Name="QueriesTb" ItemsSource="{Binding Queries,Mode=TwoWay}" CanUserAddRows="True" 
+                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="QueriesTb_AddingNewItem">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="Headers">
+                <DataGrid x:Name="HeaderTb" ItemsSource="{Binding HeaderItems,Mode=TwoWay}" CanUserAddRows="True" 
+                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="HeaderTb_AddingNewItem">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="Body" 
+                     Visibility="{Binding Method, Converter={StaticResource MethodCvt}}">
+                <TabControl SelectedIndex="{Binding BodyTab,Mode=OneWayToSource}">
+                    <TabItem Header="None">
+                    </TabItem>
+                    <TabItem Header="Raw">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <ComboBox Text="{Binding RawBodyText,Mode=TwoWay}" 
+                                      ItemsSource="{Binding RawTypeItems}" 
+                                      VerticalContentAlignment="Center"
+                                      IsEditable="True"
+                                      MinWidth="100"
+                                      HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding RawBody,Mode=TwoWay}" Grid.Row="1" Style="{StaticResource RawTb}"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Hex">
+                        <TextBox Text="{Binding HexBody,Mode=TwoWay}" Style="{StaticResource RawTb}"/>
+                    </TabItem>
+                    <TabItem Header="Form">
+                        <DataGrid x:Name="FormTb" ItemsSource="{Binding FormItems,Mode=TwoWay}" CanUserAddRows="True" 
+                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="FormTb_AddingNewItem">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
+                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="File">
+                        <ctl:FileInput FileName="{Binding FileBody,Mode=TwoWay}"/>
+                    </TabItem>
+                    <TabItem Header="FormData">
+                        <DataGrid x:Name="FormDataTb" ItemsSource="{Binding FormDataItems,Mode=TwoWay}" CanUserAddRows="True" 
+                          CanUserDeleteRows="True" AutoGenerateColumns="False" 
+                                  AddingNewItem="FormDataTb_AddingNewItem">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
+                                <DataGridTemplateColumn Header="Type" Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox SelectedIndex="{Binding DataType,Mode=TwoWay}" 
+                                                      VerticalContentAlignment="Center">
+                                                <ComboBoxItem>Text</ComboBoxItem>
+                                                <ComboBoxItem>File</ComboBoxItem>
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Value" Width="400">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <TextBox Text="{Binding Value,Mode=TwoWay}" 
+                                                         Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=0}"/>
+                                                <ctl:FileInput FileName="{Binding Value,Mode=TwoWay}" 
+                                                               Height="30"
+                                                               Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=1}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+        </TabControl>
+        <GroupBox Header="Response" Grid.Row="2">
+            <Grid>
+                <TabControl>
+                    <TabItem Header="Preview">
+                        <wv2:WebView2 x:Name="Browser" 
+                                      CoreWebView2InitializationCompleted="Browser_CoreWebView2InitializationCompleted"/>
+                    </TabItem>
+                    <TabItem Header="Raw">
+                        
+                    </TabItem>
+                    <TabItem Header="Body">
+                        <TextBox x:Name="RawBodyTb" IsReadOnly="True"/>
+                    </TabItem>
+                    <TabItem Header="Headers">
+                        <DataGrid ItemsSource="{Binding ResponseHeaders}" 
+                                  AutoGenerateColumns="False" CanUserAddRows="False">
+                            <DataGrid.Columns >
+                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Value" Width="200" Binding="{Binding Value}" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="Cookies">
+                        <TextBox IsReadOnly="True"/>
+                    </TabItem>
+                    <TabItem Header="Other">
+                        <DataGrid ItemsSource="{Binding ResponseInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
+                            <DataGrid.Columns >
+                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Value" Width="200" Binding="{Binding Value}" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+                <ctl:ProgressRing IsActive="{Binding IsLoading,Mode=OneWay}"/>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>
