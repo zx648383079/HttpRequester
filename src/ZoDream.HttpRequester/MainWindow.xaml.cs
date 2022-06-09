@@ -63,15 +63,30 @@ namespace ZoDream.HttpRequester
                 ViewModel.Cancel();
                 return;
             }
-            var page = await ViewModel.GetFormatHtmlAsync();
-            var raw = await ViewModel.GetRawAsync();
-            App.Current.Dispatcher.Invoke(() =>
+            try
             {
-                ViewModel.CreateResponseStream();
-                HexTb.Length = ViewModel.ResponseStream!.Length;
-                RawBodyTb.Text = raw;
-                Browser.NavigateToString(page);
-            });
+                var page = await ViewModel.GetFormatHtmlAsync();
+                var raw = await ViewModel.GetRawAsync();
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        ViewModel.CreateResponseStream();
+                        HexTb.Length = ViewModel.ResponseStream!.Length;
+                        RawBodyTb.Text = raw;
+                        Browser.NavigateToString(page);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
         }
 
         private void Browser_CoreWebView2InitializationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)

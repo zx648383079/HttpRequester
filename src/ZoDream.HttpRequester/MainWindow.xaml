@@ -193,7 +193,7 @@
                         <hex:HexView x:Name="HexTb" ByteLoad="HexView_ByteLoad"/>
                     </TabItem>
                     <TabItem Header="Body">
-                        <TextBox x:Name="RawBodyTb" IsReadOnly="True"/>
+                        <TextBox x:Name="RawBodyTb" IsReadOnly="True" TextWrapping="Wrap"/>
                     </TabItem>
                     <TabItem Header="Headers">
                         <DataGrid ItemsSource="{Binding ResponseHeaders}" 

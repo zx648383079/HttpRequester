@@ -356,7 +356,7 @@ namespace ZoDream.HttpRequester.ViewModels
             {
                 if (item.Contains(';'))
                 {
-                    ContentInfo.Add("Type", item.Substring(0, item.IndexOf(';')));
+                    ContentInfo.Add("Type", item[..item.IndexOf(';')]);
                 }
                 var i = item.IndexOf("charset=");
                 if (i < 0)
@@ -364,7 +364,7 @@ namespace ZoDream.HttpRequester.ViewModels
                     ContentInfo.Add("Type", item);
                     continue;
                 }
-                ContentInfo.Add("Encoding", item[(i + 7)..]);
+                ContentInfo.Add("Encoding", item[(i + 8)..]);
             }
             foreach (var item in res.Content.Headers)
             {

@@ -423,13 +423,13 @@ var JSONFormatter = /** @class */ (function () {
             return this.getSpanBoth('null', 'nl');
         }
         if (type === VALUE_TYPE.NUMBER) {
-            return this.getSpanBoth(value, 'n');
+            return this.getSpanBoth("".concat(value), 'n');
         }
         if (type === VALUE_TYPE.BOOL) {
             return this.getSpanBoth(value ? 'true' : 'false', 'bl');
         }
         if (type === VALUE_TYPE.STRING) {
-            return this.getSpanBoth(value, 's');
+            return this.getSpanBoth("\"".concat(value, "\""), 's');
         }
         if (type === VALUE_TYPE.ARRAY) {
             return this.renderArrayValue(value);
