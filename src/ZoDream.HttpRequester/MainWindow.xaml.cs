@@ -139,5 +139,11 @@ namespace ZoDream.HttpRequester
         {
             ViewModel.RemoveHistory((sender as Button).DataContext as string);
         }
+
+        private void AddToCookieBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddCookieToRequest();
+            RequestTab.SelectedIndex = 2;
+        }
     }
 }

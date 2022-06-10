@@ -64,7 +64,7 @@
                     Click="ExecuteBtn_Click" 
                     Grid.Column="2"/>
         </Grid>
-        <TabControl Grid.Row="1">
+        <TabControl x:Name="RequestTab" Grid.Row="1">
             <TabItem Header="Queries">
                 <DataGrid x:Name="QueriesTb" ItemsSource="{Binding Queries,Mode=TwoWay}" CanUserAddRows="True" 
                           CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="QueriesTb_AddingNewItem">
@@ -211,6 +211,11 @@
                                 <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}" IsReadOnly="True"/>
                             </DataGrid.Columns>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem x:Name="AddToCookieBtn" Click="AddToCookieBtn_Click" Header="Add to request header"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
                         </DataGrid>
                     </TabItem>
                     <TabItem Header="Other">

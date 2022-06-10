@@ -253,13 +253,16 @@ namespace ZoDream.HttpRequester.ViewModels
                 CookieContainer = new CookieContainer(),
                 ServerCertificateCustomValidationCallback = (message, certificate2, arg3, arg4) => true
             };
-            var cookie = HeaderItems.Where(i => i.Name.ToLower() == "cookie").FirstOrDefault();
-            if (cookie != null)
+            foreach (var item in HeaderItems)
             {
-                foreach (var item in cookie.Value.Split(';'))
+                if (item.Name.ToLower() != "cookie")
                 {
-                    handler.CookieContainer.SetCookies(requstUrl, item);
-                    AddCookie(item);
+                    continue;
+                }
+                foreach (var val in item.Value.Split(';'))
+                {
+                    handler.CookieContainer.SetCookies(requstUrl, val);
+                    AddCookie(val);
                 }
             }
             if (!string.IsNullOrWhiteSpace(ProxyAddress))
@@ -463,6 +466,34 @@ namespace ZoDream.HttpRequester.ViewModels
                 }
             }
 
+        }
+
+        public void AddCookieToRequest()
+        {
+            if (ResponseCookies.Count == 0)
+            {
+                return;
+            }
+            var sb = new StringBuilder();
+            foreach (var item in ResponseCookies)
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append(';');
+                }
+                sb.Append(item.Name);
+                sb.Append('=');
+                sb.Append(item.Value);
+            }
+            foreach (var item in HeaderItems)
+            {
+                if (item.Name.ToLower() == "cookie")
+                {
+                    item.Value = sb.ToString();
+                    return;
+                }
+            }
+            HeaderItems.Add(new DataItem("Cookie", sb.ToString()));
         }
 
         public async Task<string> GetFormatHtmlAsync()
