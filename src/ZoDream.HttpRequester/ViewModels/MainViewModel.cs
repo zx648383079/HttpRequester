@@ -499,7 +499,10 @@ namespace ZoDream.HttpRequester.ViewModels
         public async Task<string> GetFormatHtmlAsync()
         {
             var contentType = ContentInfo.ContainsKey("Type") ? ContentInfo["Type"] : string.Empty;
-            if (contentType.Contains("html"))
+            if (contentType.Contains("text") || contentType.Contains("html") ||
+                contentType.Contains("javascript") ||
+                contentType.Contains("css") ||
+                contentType.Contains("style") || contentType.Contains("xml"))
             {
                 return await GetHtmlAsync();
             }
@@ -523,7 +526,8 @@ namespace ZoDream.HttpRequester.ViewModels
                 contentType.Contains("json") || 
                 contentType.Contains("javascript") ||
                 contentType.Contains("css") ||
-                contentType.Contains("style")
+                contentType.Contains("style") || 
+                contentType.Contains("xml")
                 )
             {
                 return await LocationStorage.ReadAsync(HttpTempFileName);
