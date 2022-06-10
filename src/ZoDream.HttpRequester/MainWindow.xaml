@@ -205,14 +205,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
-                    <!--<TabItem Header="Cookies">
-                        <TextBox IsReadOnly="True"/>
-                    </TabItem>-->
+                    <TabItem Header="Cookies">
+                        <DataGrid ItemsSource="{Binding ResponseCookies}" AutoGenerateColumns="False" CanUserAddRows="False">
+                            <DataGrid.Columns >
+                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}" IsReadOnly="True"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
                     <TabItem Header="Other">
                         <DataGrid ItemsSource="{Binding ResponseInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
                             <DataGrid.Columns >
                                 <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="Value" Width="200" Binding="{Binding Value}" IsReadOnly="True"/>
+                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}" IsReadOnly="True"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>

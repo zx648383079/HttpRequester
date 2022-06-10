@@ -22,6 +22,7 @@ namespace ZoDream.HttpRequester.ViewModels
 
         public MainViewModel()
         {
+            ClearTemp();
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             RawBodyType = RawTypeItems[1];
             Method = MethodItems[0];
@@ -199,6 +200,15 @@ namespace ZoDream.HttpRequester.ViewModels
             set => Set(ref responseHeaders, value);
         }
 
+        private ObservableCollection<DataItem> responseCookies = new();
+
+        public ObservableCollection<DataItem> ResponseCookies
+        {
+            get => responseCookies;
+            set => Set(ref responseCookies, value);
+        }
+
+
         private ObservableCollection<DataItem> responseInfo = new();
 
         public ObservableCollection<DataItem> ResponseInfo
@@ -228,9 +238,10 @@ namespace ZoDream.HttpRequester.ViewModels
                 TokenSource?.Cancel();
             }
             IsLoading = true;
-            responseInfo.Clear();
-            responseHeaders.Clear();
+            ResponseInfo.Clear();
+            ResponseHeaders.Clear();
             ContentInfo.Clear();
+            ResponseCookies.Clear();
             TokenSource = new();
             AddHistory(Url);
             var token = TokenSource.Token;
@@ -248,6 +259,7 @@ namespace ZoDream.HttpRequester.ViewModels
                 foreach (var item in cookie.Value.Split(';'))
                 {
                     handler.CookieContainer.SetCookies(requstUrl, item);
+                    AddCookie(item);
                 }
             }
             if (!string.IsNullOrWhiteSpace(ProxyAddress))
@@ -366,9 +378,16 @@ namespace ZoDream.HttpRequester.ViewModels
                 }
                 ContentInfo.Add("Encoding", item[(i + 8)..]);
             }
-            foreach (var item in res.Content.Headers)
+            foreach (var item in res.Headers)
             {
-                responseHeaders.Add(new DataItem(item.Key, string.Join(';', item.Value)));
+                foreach (var val in item.Value)
+                {
+                    if (item.Key.ToLower() == "set-cookie")
+                    {
+                        AddCookie(val);
+                    }
+                    responseHeaders.Add(new DataItem(item.Key, val));
+                }
             }
             if (length != null &&  length.ToString()!.Length > 10)
             {
@@ -413,6 +432,38 @@ namespace ZoDream.HttpRequester.ViewModels
             IsLoading = false;
         }
 
+        private void AddCookie(string line)
+        {
+            var args = line.Split(';');
+            var expires = string.Empty;
+            for (var i = args.Length - 1; i > 0; i--)
+            {
+                var items = args[i].Split(new char[] { '=' }, 2);
+                if (items[0].Trim().ToLower() == "expires")
+                {
+                    expires = items[1].Trim();
+                }
+            }
+            args = args[0].Split(new char[] { '=' }, 2);
+            if (args.Length < 2)
+            {
+                return;
+            }
+            var key = args[0].Trim();
+            if (string.IsNullOrWhiteSpace(expires) || DateTime.Parse(expires) > DateTime.Now)
+            {
+                ResponseCookies.Add(new DataItem(key, args[1]));
+                return;
+            }
+            for (var i = ResponseCookies.Count - 1; i >= 0; i--)
+            {
+                if (ResponseCookies[i].Name == key)
+                {
+                    ResponseCookies.RemoveAt(i);
+                }
+            }
+
+        }
 
         public async Task<string> GetFormatHtmlAsync()
         {
@@ -525,7 +576,7 @@ namespace ZoDream.HttpRequester.ViewModels
             {
                 return;
             }
-            ResponseStream?.Close();
+            ResponseStream.Close();
             ResponseStream = null;
         }
 
@@ -591,11 +642,19 @@ namespace ZoDream.HttpRequester.ViewModels
             _ = SaveOptionAsync();
         }
 
+        private void ClearTemp()
+        {
+            if (File.Exists(HttpTempFileName))
+            {
+                File.Delete(HttpTempFileName);
+            }
+        }
+
         public void Dispose()
         {
             Cancel();
             ClearResponseStream();
-            File.Delete(HttpTempFileName);
+            ClearTemp();
         }
     }
 

@@ -131,7 +131,7 @@ namespace ZoDream.HttpRequester
 
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
-            _ =ViewModel.SaveOptionAsync();
+            _ = ViewModel.SaveOptionAsync();
             ViewModel.Dispose();
         }
 
