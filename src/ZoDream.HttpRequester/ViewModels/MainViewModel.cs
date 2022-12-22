@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using ZoDream.HttpRequester.Models;
 using ZoDream.HttpRequester.Utils;
 using ZoDream.Shared.Storage;
@@ -363,7 +364,7 @@ namespace ZoDream.HttpRequester.ViewModels
                 return;
             }
             var length = res.Content.Headers.ContentLength;
-            ResponseInfo.Add(new DataItem("Status Code", $"{res.StatusCode}"));
+            ResponseInfo.Add(new DataItem("Status Code", $"{(int)res.StatusCode} {res.StatusCode}"));
             ResponseInfo.Add(new DataItem("Version", $"{res.Version}"));
             ResponseInfo.Add(new DataItem("Length", Disk.FormatSize(length)));
             var items = res.Content.Headers.GetValues("Content-Type");
