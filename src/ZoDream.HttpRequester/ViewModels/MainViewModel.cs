@@ -367,20 +367,27 @@ namespace ZoDream.HttpRequester.ViewModels
             ResponseInfo.Add(new DataItem("Status Code", $"{(int)res.StatusCode} {res.StatusCode}"));
             ResponseInfo.Add(new DataItem("Version", $"{res.Version}"));
             ResponseInfo.Add(new DataItem("Length", Disk.FormatSize(length)));
-            var items = res.Content.Headers.GetValues("Content-Type");
-            foreach (var item in items)
+            try
             {
-                if (item.Contains(';'))
+                var items = res.Content.Headers.GetValues("Content-Type");
+                foreach (var item in items)
                 {
-                    ContentInfo.Add("Type", item[..item.IndexOf(';')]);
+                    if (item.Contains(';'))
+                    {
+                        ContentInfo.Add("Type", item[..item.IndexOf(';')]);
+                    }
+                    var i = item.IndexOf("charset=");
+                    if (i < 0)
+                    {
+                        ContentInfo.Add("Type", item);
+                        continue;
+                    }
+                    ContentInfo.Add("Encoding", item[(i + 8)..]);
                 }
-                var i = item.IndexOf("charset=");
-                if (i < 0)
-                {
-                    ContentInfo.Add("Type", item);
-                    continue;
-                }
-                ContentInfo.Add("Encoding", item[(i + 8)..]);
+            }
+            catch (Exception)
+            {
+
             }
             foreach (var item in res.Headers)
             {
