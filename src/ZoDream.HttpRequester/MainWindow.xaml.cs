@@ -26,10 +26,9 @@ namespace ZoDream.HttpRequester
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = ViewModel;
         }
 
-        public MainViewModel ViewModel = new();
+        public MainViewModel ViewModel => (DataContext as MainViewModel)!;
 
         private void ExecuteBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -96,25 +95,6 @@ namespace ZoDream.HttpRequester
             // coreWebView.DOMContentLoaded += CoreWebView_DOMContentLoaded;
         }
 
-        private void HeaderTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
-        {
-            ViewModel.HeaderItems.Add(new Models.DataItem());
-        }
-
-        private void QueriesTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
-        {
-            ViewModel.Queries.Add(new Models.DataItem());
-        }
-
-        private void FormDataTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
-        {
-            ViewModel.FormDataItems.Add(new Models.FormItem());
-        }
-
-        private void FormTb_AddingNewItem(object sender, AddingNewItemEventArgs e)
-        {
-            ViewModel.FormItems.Add(new Models.DataItem());
-        }
 
         private void HexView_ByteLoad(object sender, Shared.HexView.HexLoadEventArgs e)
         {
@@ -135,10 +115,6 @@ namespace ZoDream.HttpRequester
             ViewModel.Dispose();
         }
 
-        private void IconButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.RemoveHistory((sender as Button).DataContext as string);
-        }
 
         private void AddToCookieBtn_Click(object sender, RoutedEventArgs e)
         {

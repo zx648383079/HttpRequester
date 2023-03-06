@@ -6,7 +6,7 @@
 	  <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-	  <Version>1.0</Version>
+	  <Version>1.1</Version>
 	  <Authors>zodream</Authors>
 	  <Company>zodream.cn</Company>
 	  <Copyright>Copyright © 2022 zodream.cn</Copyright>

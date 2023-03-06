@@ -7,11 +7,15 @@
         xmlns:ctl="clr-namespace:ZoDream.Shared.Controls;assembly=ZoDream.Shared.Controls"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:hex="clr-namespace:ZoDream.Shared.HexView;assembly=ZoDream.Shared.HexView"
+        xmlns:vm="clr-namespace:ZoDream.HttpRequester.ViewModels"
         xmlns:local="clr-namespace:ZoDream.HttpRequester"
         Unloaded="Window_Unloaded"
         mc:Ignorable="d"
         x:Name="root"
         Title="Http Requester" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
     <Window.Resources>
         <FontFamily x:Key="IconFontFamily">Segoe MDL2 Assets</FontFamily>
         <cvt:MethodConverter x:Key="MethodCvt"/>
@@ -24,6 +28,18 @@
         <Style x:Key="HeaderTb" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="IconBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="FontFamily" Value="{StaticResource IconFontFamily}"/>
+        </Style>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+        <Style x:Key="ItemTb" TargetType="TextBox">
+            <Setter Property="MaxLines" Value="1"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -54,7 +70,10 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
                             <Button Grid.Column="1" Width="20" Height="20"
-                                            Content="&#xE106;" FontFamily="{StaticResource IconFontFamily}" DataContext="{Binding}" Click="IconButton_Click"/>
+                                    Content="&#xE106;" 
+                                    Command="{Binding ElementName=root, Path=DataContext.RemoveHistoryCommand}"      
+                                    CommandParameter="{Binding}"
+                                    FontFamily="{StaticResource IconFontFamily}"/>
                         </Grid>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -66,13 +85,36 @@
         </Grid>
         <TabControl x:Name="RequestTab" Grid.Row="1">
             <TabItem Header="Queries">
-                <DataGrid x:Name="QueriesTb" ItemsSource="{Binding Queries,Mode=TwoWay}" CanUserAddRows="True" 
-                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="QueriesTb_AddingNewItem">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
-                        <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <ListBox ItemsSource="{Binding Queries,Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding Name,Mode=TwoWay}" Style="{StaticResource ItemTb}"/>
+                                    <TextBox Text="{Binding Value,Mode=TwoWay}"  Style="{StaticResource ItemTb}" Grid.Column="1"/>
+                                    <Button Content="&#xE106;" 
+                                            Command="{Binding ElementName=root, Path=DataContext.RemoveQueryCommand}"      
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconBtn}" 
+                                            Grid.Column="2"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="&#xE109;" 
+                            Command="{Binding AddQueryCommand}"
+                            Style="{StaticResource IconBtn}" 
+                            Grid.Row="1"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Proxy">
                 <Grid>
@@ -89,28 +131,45 @@
                     <TextBlock Text="Address" Style="{StaticResource HeaderTb}"/>
                     <TextBlock Text="UserName" Grid.Row="1" Style="{StaticResource HeaderTb}"/>
                     <TextBlock Text="Password" Grid.Row="2" Style="{StaticResource HeaderTb}"/>
-                    <TextBox Text="{Binding ProxyAddress,Mode=TwoWay}" MaxLines="1" Grid.Column="1"/>
-                    <TextBox Text="{Binding ProxyUserName,Mode=TwoWay}" MaxLines="1" Grid.Column="1" Grid.Row="1"/>
-                    <TextBox Text="{Binding ProxyPassword,Mode=TwoWay}" MaxLines="1" Grid.Column="1" Grid.Row="2"/>
+                    <TextBox Text="{Binding ProxyAddress,Mode=TwoWay}"  Style="{StaticResource ItemTb}" Grid.Column="1"/>
+                    <TextBox Text="{Binding ProxyUserName,Mode=TwoWay}"  Style="{StaticResource ItemTb}" Grid.Column="1" Grid.Row="1"/>
+                    <TextBox Text="{Binding ProxyPassword,Mode=TwoWay}"  Style="{StaticResource ItemTb}" Grid.Column="1" Grid.Row="2"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Headers">
-                <DataGrid x:Name="HeaderTb" ItemsSource="{Binding HeaderItems,Mode=TwoWay}" CanUserAddRows="True" 
-                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="HeaderTb_AddingNewItem">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Key" Width="200">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <ListBox ItemsSource="{Binding HeaderItems,Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
                                     <ComboBox Text="{Binding Name,Mode=TwoWay}"
                                               IsEditable="True"
-                                                      VerticalContentAlignment="Center"
-                                                      ItemsSource="{Binding DataContext.HeaderNameItems,ElementName=root,Mode=OneWay}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                            VerticalContentAlignment="Center"
+                                            ItemsSource="{Binding ElementName=root, Path=DataContext.HeaderNameItems,Mode=OneWay}"/>
+                                    <TextBox Text="{Binding Value,Mode=TwoWay}"  Style="{StaticResource ItemTb}" Grid.Column="1"/>
+                                    <Button Content="&#xE106;" 
+                                            Command="{Binding ElementName=root, Path=DataContext.RemoveHeaderCommand}"      
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconBtn}" 
+                                            Grid.Column="2"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Content="&#xE109;" 
+                            Command="{Binding AddHeaderCommand}"
+                            Style="{StaticResource IconBtn}" 
+                            Grid.Row="1"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Body" 
                      Visibility="{Binding Method, Converter={StaticResource MethodCvt}}">
@@ -136,48 +195,84 @@
                         <TextBox Text="{Binding HexBody,Mode=TwoWay}" Style="{StaticResource RawTb}"/>
                     </TabItem>
                     <TabItem Header="Form">
-                        <DataGrid x:Name="FormTb" ItemsSource="{Binding FormItems,Mode=TwoWay}" CanUserAddRows="True" 
-                          CanUserDeleteRows="True" AutoGenerateColumns="False" AddingNewItem="FormTb_AddingNewItem">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
-                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <ListBox ItemsSource="{Binding FormItems,Mode=TwoWay}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding Name,Mode=TwoWay}" Style="{StaticResource ItemTb}"/>
+                                            <TextBox Text="{Binding Value,Mode=TwoWay}" Style="{StaticResource ItemTb}" Grid.Column="1"/>
+                                            <Button Content="&#xE106;" 
+                                            Command="{Binding ElementName=root, Path=DataContext.RemoveFormCommand}"      
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconBtn}" 
+                                            Grid.Column="2"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Content="&#xE109;" 
+                            Command="{Binding AddFormCommand}"
+                            Style="{StaticResource IconBtn}" 
+                            Grid.Row="1"/>
+                        </Grid>
                     </TabItem>
                     <TabItem Header="File">
                         <ctl:FileInput FileName="{Binding FileBody,Mode=TwoWay}"/>
                     </TabItem>
                     <TabItem Header="FormData">
-                        <DataGrid x:Name="FormDataTb" ItemsSource="{Binding FormDataItems,Mode=TwoWay}" CanUserAddRows="True" 
-                          CanUserDeleteRows="True" AutoGenerateColumns="False" 
-                                  AddingNewItem="FormDataTb_AddingNewItem">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" />
-                                <DataGridTemplateColumn Header="Type" Width="60">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <ListBox ItemsSource="{Binding FormDataItems,Mode=TwoWay}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding Name,Mode=TwoWay}" Style="{StaticResource ItemTb}"/>
                                             <ComboBox SelectedIndex="{Binding DataType,Mode=TwoWay}"
                                                       VerticalContentAlignment="Center"
-                                                      ItemsSource="{Binding DataContext.FormTypeItems,ElementName=root,Mode=OneWay}"/>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Value" Width="400">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Grid>
+                                                      Grid.Column="1"
+                                                      ItemsSource="{Binding ElementName=root, Path=DataContext.FormTypeItems,Mode=OneWay}"/>
+                                            <Grid Grid.Column="2">
                                                 <TextBox Text="{Binding Value,Mode=TwoWay}" 
-                                                         Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=0}"/>
+                                                          Style="{StaticResource ItemTb}"
+                                                         Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter='^1'}"/>
                                                 <ctl:FileInput FileName="{Binding Value,Mode=TwoWay}" 
                                                                Height="30"
                                                                FontSize="16"
                                                                Visibility="{Binding DataType,Mode=OneWay,Converter={StaticResource TypeCvt},ConverterParameter=1}"/>
                                             </Grid>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                            <Button Content="&#xE106;" 
+                                            Command="{Binding ElementName=root, Path=DataContext.RemoveFormDataCommand}"      
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource IconBtn}" 
+                                            Grid.Column="3"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Content="&#xE109;" 
+                            Command="{Binding AddFormDataCommand}"
+                            Style="{StaticResource IconBtn}" 
+                            Grid.Row="1"/>
+                        </Grid>
                     </TabItem>
                 </TabControl>
             </TabItem>
@@ -196,35 +291,42 @@
                         <TextBox x:Name="RawBodyTb" IsReadOnly="True" TextWrapping="Wrap"/>
                     </TabItem>
                     <TabItem Header="Headers">
-                        <DataGrid ItemsSource="{Binding ResponseHeaders}" 
-                                  AutoGenerateColumns="False" CanUserAddRows="False">
-                            <DataGrid.Columns >
-                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="Value" Width="200" 
-                                                    Binding="{Binding Value}" IsReadOnly="True"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <ListView ItemsSource="{Binding ResponseHeaders}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Value" Width="200" 
+                                                    DisplayMemberBinding="{Binding Value}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
                     </TabItem>
                     <TabItem Header="Cookies">
-                        <DataGrid ItemsSource="{Binding ResponseCookies}" AutoGenerateColumns="False" CanUserAddRows="False">
-                            <DataGrid.Columns >
-                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}" IsReadOnly="True"/>
-                            </DataGrid.Columns>
-                            <DataGrid.ContextMenu>
+                        <ListView ItemsSource="{Binding ResponseCookies}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Value" Width="400" 
+                                                    DisplayMemberBinding="{Binding Value}"/>
+                                </GridView>
+                            </ListView.View>
+                            <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem x:Name="AddToCookieBtn" Click="AddToCookieBtn_Click" Header="Add to request header"/>
                                 </ContextMenu>
-                            </DataGrid.ContextMenu>
-                        </DataGrid>
+                            </ListView.ContextMenu>
+                        </ListView>
                     </TabItem>
                     <TabItem Header="Other">
-                        <DataGrid ItemsSource="{Binding ResponseInfo}" AutoGenerateColumns="False" CanUserAddRows="False">
-                            <DataGrid.Columns >
-                                <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Name}" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="Value" Width="400" Binding="{Binding Value}" IsReadOnly="True"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <ListView ItemsSource="{Binding ResponseInfo}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Value" Width="400" 
+                                                    DisplayMemberBinding="{Binding Value}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
                     </TabItem>
                 </TabControl>
                 <ctl:ProgressRing IsActive="{Binding IsLoading,Mode=OneWay}"/>

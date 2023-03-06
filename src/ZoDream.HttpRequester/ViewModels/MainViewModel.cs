@@ -11,9 +11,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows.Controls;
+using System.Windows.Input;
 using ZoDream.HttpRequester.Models;
 using ZoDream.HttpRequester.Utils;
 using ZoDream.Shared.Storage;
+using ZoDream.Shared.ViewModel;
 using ZoDream.Shared.ViewModels;
 
 namespace ZoDream.HttpRequester.ViewModels
@@ -23,6 +26,15 @@ namespace ZoDream.HttpRequester.ViewModels
 
         public MainViewModel()
         {
+            AddQueryCommand = new RelayCommand(TapAddQuery);
+            AddHeaderCommand = new RelayCommand(TapAddHeader);
+            AddFormCommand = new RelayCommand(TapAddForm);
+            AddFormDataCommand = new RelayCommand(TapAddFormData);
+            RemoveHistoryCommand = new RelayCommand(TapRemoveHistory);
+            RemoveQueryCommand = new RelayCommand(TapRemoveQuery);
+            RemoveHeaderCommand = new RelayCommand(TapRemoveHeader);
+            RemoveFormCommand = new RelayCommand(TapRemoveForm);
+            RemoveFormDataCommand = new RelayCommand(TapRemoveFormData);
             ClearTemp();
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             RawBodyType = RawTypeItems[1];
@@ -30,7 +42,19 @@ namespace ZoDream.HttpRequester.ViewModels
             _ = LoadOptionAsync();
         }
 
+        
+
         public AppOption Option = new();
+
+        public ICommand RemoveHistoryCommand { get; set; }
+        public ICommand RemoveQueryCommand { get; set; }
+        public ICommand RemoveHeaderCommand { get; set; }
+        public ICommand RemoveFormCommand { get; set; }
+        public ICommand RemoveFormDataCommand { get; set; }
+        public ICommand AddQueryCommand { get; set; }
+        public ICommand AddHeaderCommand { get; set; }
+        public ICommand AddFormCommand { get; set; }
+        public ICommand AddFormDataCommand { get; set; }
 
         private ObservableCollection<string> urlHistories = new();
 
@@ -223,6 +247,66 @@ namespace ZoDream.HttpRequester.ViewModels
         private readonly Dictionary<string, string> ContentInfo = new();
         private readonly string HttpTempFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_save_temp");
 
+        private void TapAddFormData(object? _)
+        {
+            FormDataItems.Add(new FormItem());
+        }
+
+        private void TapAddForm(object? _)
+        {
+            FormItems.Add(new DataItem());
+        }
+
+        private void TapAddHeader(object? _)
+        {
+            HeaderItems.Add(new DataItem());
+        }
+
+        private void TapAddQuery(object? _)
+        {
+            Queries.Add(new DataItem());
+        }
+
+        private void TapRemoveFormData(object? obj)
+        {
+            if (obj is FormItem arg)
+            {
+                FormDataItems.Remove(arg);
+            }
+        }
+
+        private void TapRemoveForm(object? obj)
+        {
+            if (obj is DataItem arg)
+            {
+                FormItems.Remove(arg);
+            }
+        }
+
+        private void TapRemoveHeader(object? obj)
+        {
+            if (obj is DataItem arg)
+            {
+                HeaderItems.Remove(arg);
+            }
+        }
+
+        private void TapRemoveQuery(object? obj)
+        {
+            if (obj is DataItem arg)
+            {
+                Queries.Remove(arg);
+            }
+        }
+
+        private void TapRemoveHistory(object? obj)
+        {
+            if (obj is string arg)
+            {
+                RemoveHistory(arg);
+            }
+        }
+
         public void Cancel()
         {
             if (IsLoading)
@@ -246,7 +330,7 @@ namespace ZoDream.HttpRequester.ViewModels
             TokenSource = new();
             AddHistory(Url);
             var token = TokenSource.Token;
-            var requstUrl = GetUri();
+            var requestUrl = GetUri();
             var handler = new HttpClientHandler()
             {
                 AllowAutoRedirect = false,
@@ -262,7 +346,7 @@ namespace ZoDream.HttpRequester.ViewModels
                 }
                 foreach (var val in item.Value.Split(';'))
                 {
-                    handler.CookieContainer.SetCookies(requstUrl, val);
+                    handler.CookieContainer.SetCookies(requestUrl, val);
                     AddCookie(val);
                 }
             }
@@ -279,8 +363,8 @@ namespace ZoDream.HttpRequester.ViewModels
             }
             using var client = new HttpClient(handler);
             using var req = new HttpRequestMessage();
-            req.RequestUri = requstUrl;
-            var url = requstUrl.ToString();
+            req.RequestUri = requestUrl;
+            var url = requestUrl.ToString();
             ResponseInfo.Add(new DataItem("URL", url));
             ContentInfo.Add("URL", url);
             foreach (var item in HeaderItems)
