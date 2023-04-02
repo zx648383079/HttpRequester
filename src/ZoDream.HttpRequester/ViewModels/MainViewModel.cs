@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -37,6 +38,15 @@ namespace ZoDream.HttpRequester.ViewModels
             RemoveFormDataCommand = new RelayCommand(TapRemoveFormData);
             ClearTemp();
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var headerRegex = new Regex("[A-Z]");
+            headerNameItems = Enum.GetNames(typeof(HttpRequestHeader)).Select(x => {
+                if (x.Contains('-'))
+                {
+                    return x;
+                }
+                x = headerRegex.Replace(x, "-$0");
+                return x[1..];
+            }).ToArray();
             RawBodyType = RawTypeItems[1];
             Method = MethodItems[0];
             _ = LoadOptionAsync();
@@ -96,7 +106,7 @@ namespace ZoDream.HttpRequester.ViewModels
             set => Set(ref proxyPassword, value);
         }
 
-        private string[] headerNameItems = Enum.GetNames(typeof(HttpRequestHeader));
+        private string[] headerNameItems;
 
         public string[] HeaderNameItems
         {
