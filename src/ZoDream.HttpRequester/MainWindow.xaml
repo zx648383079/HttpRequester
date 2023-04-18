@@ -38,6 +38,9 @@
         <Style TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
+        <Style TargetType="ListBox">
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
         <Style x:Key="ItemTb" TargetType="TextBox">
             <Setter Property="MaxLines" Value="1"/>
         </Style>
