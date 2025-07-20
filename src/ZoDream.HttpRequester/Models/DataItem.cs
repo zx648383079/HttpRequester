@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZoDream.HttpRequester.ViewModels;
-using ZoDream.Shared.ViewModels;
+﻿using ZoDream.Shared.ViewModel;
 
 namespace ZoDream.HttpRequester.Models
 {

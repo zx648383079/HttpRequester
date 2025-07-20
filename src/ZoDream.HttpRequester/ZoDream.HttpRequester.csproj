@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
 	  <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
 	  <Version>1.1</Version>
 	  <Authors>zodream</Authors>
 	  <Company>zodream.cn</Company>
-	  <Copyright>Copyright © 2022 zodream.cn</Copyright>
+	  <Copyright>Copyright © 2025 zodream.cn</Copyright>
 	  <ApplicationIcon>requester.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1722.45" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" />
   </ItemGroup>
 
   <ItemGroup>

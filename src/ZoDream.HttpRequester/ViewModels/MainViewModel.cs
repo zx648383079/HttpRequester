@@ -11,14 +11,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using System.Windows.Controls;
 using System.Windows.Input;
 using ZoDream.HttpRequester.Models;
 using ZoDream.HttpRequester.Utils;
-using ZoDream.Shared.Storage;
+using ZoDream.Shared.IO;
 using ZoDream.Shared.ViewModel;
-using ZoDream.Shared.ViewModels;
 
 namespace ZoDream.HttpRequester.ViewModels
 {
@@ -476,7 +473,7 @@ namespace ZoDream.HttpRequester.ViewModels
                         ContentInfo.Add("Type", item);
                         continue;
                     }
-                    ContentInfo.Add("Encoding", item[(i + 8)..]);
+                    ContentInfo.Add("Encoding", item[(i + 8)..].Split(',').First());
                 }
             }
             catch (Exception)
